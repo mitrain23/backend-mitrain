@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String   @id @default(uuid())
+  name             String   @db.VarChar(100)
+  email            String   @unique
+  password         String   @db.VarChar(100)
+  address          String   @db.VarChar(255)
+  phoneIntWhatsapp String   @db.VarChar(15)
+  phoneIntContact  String   @db.VarChar(15)
+  isPremium        Boolean?
+  isMitra          Boolean  @default(false)
+  Mitra            Mitra[]
+  images           Image[]
+
+  @@map("users")
+}
+
+model Mitra {
+  id               String   @id @default(uuid())
+  categoryName     String
+  description      String
+  experience       String
+  user             User     @relation(fields: [id], references: [id])
+  category         Category @relation(fields: [categoryName], references: [categoryName])
+  post             Post[]
+
+  @@map("mitras")
+}
+
+model Post {
+  id               String   @id @default(uuid())
+  title            String
+  category         String
+  description      String
+  priceMin         String
+  priceMax         String
+  location         String
+  isLiked          Boolean?
+  phoneIntWhatsapp String   @db.VarChar(15)
+  phoneIntContact  String   @db.VarChar(15)
+  mitraId          String
+  mitra            Mitra    @relation(fields: [mitraId], references: [id])
+  images           Image[]
+
+  @@map("posts")
+}
+
+model Image {
+  id      String  @id @default(uuid())
+  userId  String? 
+  postId  String?
+  url     String?
+  user    User?   @relation(fields: [userId], references: [id])
+  post    Post?   @relation(fields: [postId], references: [id])
+}
+
+model Category {
+  id           String        @id @default(uuid())
+  categoryName String        @unique
+  Mitra        Mitra[]
+  Subcategory  Subcategory[]
+}
+
+model Subcategory {
+  id              String   @id @default(uuid())
+  subcategoryName String   @unique
+  categoryName    String
+  category        Category @relation(fields: [categoryName], references: [categoryName])
+}

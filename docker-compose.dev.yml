@@ -1,0 +1,25 @@
+version: '3.3'
+
+services:
+  api-dev:
+    container_name: api-development
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NODE_ENV: development
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    ports:
+      - '3000:2000'
+    environment:
+      DATABASE_URL: mysql://root:password@mysql:1002/mitraindb_dev
+      NODE_ENV: development
+    command: npm run dev
+
+networks:
+  default:
+    external: true
+    name: proxy
+  

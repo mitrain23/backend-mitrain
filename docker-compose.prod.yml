@@ -1,0 +1,14 @@
+version: '3.3'
+
+services:
+  api:
+    build:
+      context: .
+      args:
+        NODE_ENV: production
+    ports:
+      - '2000:2000'
+    environment:
+      DATABASE_URL: mysql://root:password@mysql:1002/mitraindb
+      NODE_ENV: production
+    command: node dist/index.js
