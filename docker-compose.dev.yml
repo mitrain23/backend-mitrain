@@ -16,6 +16,7 @@ services:
     environment:
       DATABASE_URL: mysql://root:password@mysql:1002/mitraindb_dev
       NODE_ENV: development
+      JWT_SECRET: sajkldnjsandasalaasalanajainimah1222346534rwdf
     command: npm run dev
 
 networks:
