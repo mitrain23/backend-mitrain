@@ -1,5 +1,8 @@
 import { Request, Response } from 'express'
 import PostService from '../services/postService'
+import { PostModel } from '../models/postModel'
+import prisma from '../utils/prisma'
+const fs = require('fs')
 
 class PostsController {
   static async getAllPosts(req: Request, res: Response) {
@@ -84,7 +87,7 @@ class PostsController {
     try {
       const mitra = req.body.userId
       const postData = req.body
-      const images = req.files
+      const images = req.body.images
 
       const updatedPost = await PostService.updatePost(
         id,
@@ -99,6 +102,76 @@ class PostsController {
       res.status(500).json({ error: error.message })
     }
   }
+
+  // static async updatePost(req: Request, res: Response) {
+  //   const productId = parseInt(req.params.productId);
+  //   const { nama, deskripsi } = req.body;
+  //   const imageFiles = req.files;
+
+  //   try {
+  //     // Temukan produk berdasarkan ID
+  //     const existingProduct = await prisma.product.findUnique({
+  //       where: {
+  //         id: productId,
+  //       },
+  //       include: {
+  //         images: true,
+  //       },
+  //     });
+
+  //     if (!existingProduct) {
+  //       return res.status(404).json({ error: 'Product not found' });
+  //     }
+
+  //     // Update product fields (nama dan deskripsi)
+  //     const updatedProduct = await prisma.product.update({
+  //       where: {
+  //         id: productId,
+  //       },
+  //       data: {
+  //         nama,
+  //         deskripsi,
+  //       },
+  //       include: {
+  //         images: true,
+  //       },
+  //     });
+
+  //     // Proses gambar yang diunggah
+  //     if (imageFiles) {
+  //       const updatedImages = [];
+
+  //       for (const file of imageFiles) {
+  //         const imageId = /* Ambil ID gambar dari permintaan */;
+  //         const existingImage = existingProduct.images.find((image) => image.id === imageId);
+
+  //         if (existingImage) {
+  //           // Gambar sudah ada dalam produk, perbarui URL
+  //           await prisma.image.update({
+  //             where: {
+  //               id: imageId,
+  //             },
+  //             data: {
+  //               url: `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
+  //             },
+  //           });
+
+  //           updatedImages.push({ id: imageId, url: `data:${file.mimetype};base64,${file.buffer.toString('base64')}` });
+  //         } else {
+  //           // ID gambar tidak sesuai dengan gambar dalam produk
+  //           return res.status(400).json({ error: 'Invalid image ID' });
+  //         }
+  //       }
+
+  //       // Anda dapat menangani gambar yang tidak diperbarui atau dihapus sesuai dengan kebutuhan
+  //     }
+
+  //     res.json(updatedProduct);
+  //   } catch (error) {
+  //     console.error(error);
+  //     res.status(500).json({ error: 'Could not update the product.' });
+  //   }
+  // }
 
   static async deletePost(req: Request, res: Response) {
     const id = req.params.id

@@ -144,7 +144,7 @@ class PostService {
     images: any,
     mitra: string
   ) {
-    const image = images.map((file: any) => file.filename)
+
     const postDataInput = {
       title: postData.title,
       description: postData.description,
@@ -156,14 +156,8 @@ class PostService {
       category: postData.category,
       mitraId: mitra,
       isLiked: postData.isLiked || false,
-      images: {
-        createMany: {
-          data: image.map((imageUrl: string) => ({
-            url: imageUrl
-          }))
-        }
-      }
     }
+
     const post = await prisma.post.findUnique({
       where: {
         id: id
@@ -176,13 +170,44 @@ class PostService {
 
     if (mitra !== post.mitraId) {
       throw new Error('You are not the owner of post')
-    } else {
-      const updatedPost = await prisma.post.update({
-        where: { id: id },
-        data: postDataInput
-      })
-      return updatedPost
     }
+
+    
+    const updatedPost = await prisma.post.update({
+      where: { id: id },
+      data: {
+        ...postDataInput
+      }
+    })
+    
+    //check image
+    const postImages = await prisma.post.findUnique({
+      where: { id: id },
+      select: { images: { select: { id: true } } }
+    });
+
+    if (!postImages) {
+      return { error: 'Post not found' };
+    }
+
+    const postImageIds = postImages.images.map((image) => image.id);
+
+    const isAllImageIdsInPost = images.every((image: any) => postImageIds.includes(image.id));
+    
+    if (!isAllImageIdsInPost) {
+      return { error: 'Invalid image IDs for the post' };
+    }
+
+    const imageUpdates = images.map((image: any) => ({
+      where: { id: image.id },
+      data: { url: image.url },
+    }));
+
+    for (const update of imageUpdates) {
+      await prisma.image.updateMany(update);
+    }
+
+    return updatedPost
   }
 
   static async deletePost(id: string, mitra: string) {

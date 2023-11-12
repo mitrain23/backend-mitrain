@@ -2,6 +2,7 @@ import express from 'express'
 import PostsController from '../controllers/postsController'
 import upload from '../utils/multer'
 import { verifyTokenMitra } from '../utils/verifyTokenMitra'
+import imageUploadMiddleware from '../middlewares/imagesUploud'
 
 const router = express.Router()
 
@@ -24,7 +25,7 @@ router.post(
 //update
 router.put(
   '/:id',
-  upload.array('images', 5),
+  imageUploadMiddleware,
   verifyTokenMitra,
   PostsController.updatePost
 )
