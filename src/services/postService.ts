@@ -139,75 +139,108 @@ class PostService {
   }
 
   static async updatePost(
-    id: string,
+    postId: string,
     postData: PostModel,
     images: any,
-    mitra: string
+    mitraId: string
   ) {
+    try {
+      const maxImageCount = 5;
 
-    const postDataInput = {
-      title: postData.title,
-      description: postData.description,
-      priceMin: postData.priceMin,
-      priceMax: postData.priceMax,
-      location: postData.location,
-      phoneIntWhatsapp: postData.phoneIntWhatsapp,
-      phoneIntContact: postData.phoneIntContact,
-      category: postData.category,
-      mitraId: mitra,
-      isLiked: postData.isLiked || false,
-    }
-
-    const post = await prisma.post.findUnique({
-      where: {
-        id: id
+      const postDataInput = {
+        title: postData.title,
+        description: postData.description,
+        priceMin: postData.priceMin,
+        priceMax: postData.priceMax,
+        location: postData.location,
+        phoneIntWhatsapp: postData.phoneIntWhatsapp,
+        phoneIntContact: postData.phoneIntContact,
+        category: postData.category,
+        mitraId: mitraId,
+        isLiked: postData.isLiked || false,
       }
-    })
 
-    if (!post) {
-      throw new Error('Cannot find post')
-    }
+      // Cari post berdasarkan ID
+      const post = await prisma.post.findUnique({
+        where: {
+          id: postId,
+        },
+        include: {
+          images: true,
+        },
+      });
 
-    if (mitra !== post.mitraId) {
-      throw new Error('You are not the owner of post')
-    }
-
-    
-    const updatedPost = await prisma.post.update({
-      where: { id: id },
-      data: {
-        ...postDataInput
+      if (!post) {
+        return ({ error: 'Post not found' });
       }
-    })
-    
-    //check image
-    const postImages = await prisma.post.findUnique({
-      where: { id: id },
-      select: { images: { select: { id: true } } }
-    });
 
-    if (!postImages) {
-      return { error: 'Post not found' };
+      // Cek apakah pengguna memiliki hak akses untuk mengupdate post
+      if (post.mitraId !== mitraId) {
+        return ({ error: 'You are not the owner of this post' });
+      }
+
+      // Filter gambar yang memiliki ID (untuk update)
+      const existingImages = images.filter((image: any) => image.id);
+      // Filter gambar yang tidak memiliki ID (untuk tambah baru)
+      const newImages = images.filter((image: any) => !image.id);
+
+      // Cek ID gambar yang akan diupdate
+      const existingImageIds = existingImages.map((image: any) => image.id);
+      const invalidImageIds = existingImageIds.filter((imageId: any) => !post.images.some((dbImage) => dbImage.id === imageId));
+
+      if (invalidImageIds.length > 0) {
+        return ({ error: 'Invalid image IDs for the post' });
+      }
+
+      // Cek jumlah slot gambar
+      const availableSlots = maxImageCount - post.images.length;
+
+      // Jika ada slot yang tersedia, cek gambar baru (ID null)
+      if (availableSlots > 0 && newImages.length > 0) {
+        if (newImages.length > availableSlots) {
+          return ({ error: 'Image slots are full. You can only add up to ' + availableSlots + ' new images.' });
+        }
+      } else if (newImages.length > 0) {
+        return ({ error: 'Image slots are full. You cannot add new images.' });
+      }
+
+      // Update data post (misalnya title, description, dll.) jika ada dalam postData
+      if (postData) {
+        const updatedPost = await prisma.post.update({
+          where: { id: postId },
+          data: postDataInput,
+        });
+      }
+
+      // Update gambar yang memiliki ID dan menghapus gambar jika URL-nya null atau kosong
+      for (const image of existingImages) {
+        if (!image.url || image.url.trim() === '') {
+          await prisma.image.delete({
+            where: { id: image.id },
+          });
+        } else {
+          await prisma.image.update({
+            where: { id: image.id },
+            data: { url: image.url },
+          });
+        }
+      }
+
+      // Tambahkan gambar baru (ID null)
+      if (newImages.length > 0) {
+        const createdImages = await prisma.image.createMany({
+          data: newImages.map((image: any) => ({
+            url: image.url,
+            postId: postId,
+          })),
+        });
+      }
+
+      return ({ message: 'Post updated successfully' });
+    } catch (error) {
+      console.error(error);
+      return ({ error: 'Internal server error' });
     }
-
-    const postImageIds = postImages.images.map((image) => image.id);
-
-    const isAllImageIdsInPost = images.every((image: any) => postImageIds.includes(image.id));
-    
-    if (!isAllImageIdsInPost) {
-      return { error: 'Invalid image IDs for the post' };
-    }
-
-    const imageUpdates = images.map((image: any) => ({
-      where: { id: image.id },
-      data: { url: image.url },
-    }));
-
-    for (const update of imageUpdates) {
-      await prisma.image.updateMany(update);
-    }
-
-    return updatedPost
   }
 
   static async deletePost(id: string, mitra: string) {

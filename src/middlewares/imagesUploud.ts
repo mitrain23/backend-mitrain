@@ -32,7 +32,6 @@ function uploadImages(images: any) {
         image.url = image.url || null; // Set nama file ke null jika format base64 tidak valid
       }
     } else {
-			console.log('ini kosong')
       // Jika URL kosong atau null, set nama file ke null
       image.url = null;
     }
