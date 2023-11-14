@@ -175,7 +175,7 @@ class PostsController {
 
   static async deletePost(req: Request, res: Response) {
     const id = req.params.id
-    const mitra = req.body.mitraId
+    const mitra = req.body.userId
     try {
       const deletedPost = await PostService.deletePost(id, mitra)
       res.status(200).json({
