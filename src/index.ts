@@ -11,7 +11,26 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT;
 
-app.use(cors());
+/**
+ * CORS configuration for allowing cross-origin requests
+ */
+
+const allowedMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD'];
+
+const allowedHeaders = [
+  'Content-Type',
+  'Authorization',
+  'Access-Control-Allow-Origin',
+];
+
+const options: cors.CorsOptions = {
+  origin: '*',
+  methods: allowedMethods,
+  credentials: true,
+  allowedHeaders: allowedHeaders,
+};
+
+app.use(cors(options));
 
 
 /**
