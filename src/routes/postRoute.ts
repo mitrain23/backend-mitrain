@@ -7,7 +7,7 @@ import imageUploadMiddleware from '../middlewares/imagesUploud'
 const router = express.Router()
 
 // search filter
-//router.get('/search', PostsController.searchQuery)
+router.get('/search', PostsController.searchQuery)
 
 // get
 router.get('/', PostsController.getAllPosts)
@@ -37,5 +37,7 @@ router.delete('/:id', verifyTokenMitra, PostsController.deletePost)
 router.get('/status1', (req, res) => {
   res.status(200).json('api ready')
 })
+
+
 
 export default router

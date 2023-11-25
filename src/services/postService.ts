@@ -264,64 +264,73 @@ class PostService {
     }
   }
 
-  //   static async searchQuery(
-  //     searchText: string,
-  //     lokasi: string,
-  //     minPrice: number | undefined,
-  //     maxPrice: number | undefined,
-  //     skip: number,
-  //     take: number
-  //   ) {
-  //     const search = searchText || ''
-  //     const location = lokasi || ''
-  //     const strMinPrice = minPrice !== undefined ? String(minPrice) : undefined
-  //     const strMaxPrice = maxPrice !== undefined ? String(maxPrice) : undefined
-  //     const skipPage = skip || 0
-  //     const takePage = take || 10
+  static async searchQuery(
+    searchText: string,
+    lokasi: string,
+    minPrice: number | undefined,
+    maxPrice: number | undefined,
+    skip: number,
+    take: number
+  ) {
+    const search = searchText || ''
+    const location = lokasi || ''
+    const strMinPrice = minPrice !== undefined ? String(minPrice) : undefined
+    const strMaxPrice = maxPrice !== undefined ? String(maxPrice) : undefined
+    const skipPage = skip || 0
+    const takePage = take || 10
 
-  //     try {
-  //       let whereClause: any = {}
 
-  //       if (search !== '') {
-  //         // Apply search filter if searchText is not empty
-  //         whereClause.title = {
-  //           contains: search
-  //         }
-  //       }
+    let whereClause: any = {}
 
-  //       if (location !== '') {
-  //         // Apply location filter if lokasi is not empty
-  //         whereClause.location = {
-  //           contains: location
-  //         }
-  //       }
+    if (search !== '') {
+      // Apply search filter if searchText is not empty
+      whereClause.title = {
+        contains: search
+      }
+    }
 
-  //       if (strMinPrice !== undefined) {
-  //         // Apply minPrice filter if minPrice is not undefined
-  //         whereClause.price_min = {
-  //           gte: strMinPrice
-  //         }
-  //       }
+    if (location !== '') {
+      // Apply location filter if lokasi is not empty
+      whereClause.location = {
+        contains: location
+      }
+    }
 
-  //       if (strMaxPrice !== undefined) {
-  //         // Apply maxPrice filter if maxPrice is not undefined
-  //         whereClause.price_max = {
-  //           lte: strMaxPrice
-  //         }
-  //       }
+    if (strMinPrice !== undefined) {
+      // Apply minPrice filter if minPrice is not undefined
+      whereClause.priceMin = {
+        contains: strMinPrice
+      }
+    }
 
-  //       const results = await prisma.post.findMany({
-  //         where: whereClause,
-  //         include: { author: { select: { name: true } }, image: true },
-  //         skip: skipPage,
-  //         take: takePage
-  //       })
+    if (strMaxPrice !== undefined) {
+      // Apply maxPrice filter if maxPrice is not undefined
+      whereClause.priceMax = {
+        contains: strMaxPrice
+      }
+    }
 
-  //       return results
-  //     } catch (error) {
-  //       // Handle error
-  //     }
-  //   }
+    const results = await prisma.post.findMany({
+      where: whereClause,
+      include: {
+        mitra: {
+          select: {
+            user: {
+              select: {
+                name: true
+              }
+            }
+          }
+        },
+        images: { select: { url: true } }
+      },
+      skip: skipPage,
+      take: takePage
+    })
+
+    return results
+
+  }
 }
 
 export default PostService
