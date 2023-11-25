@@ -185,6 +185,24 @@ class PostsController {
       res.status(500).json({ error: error.message })
     }
   }
+
+  static async searchQuery(req: Request, res: Response) {
+    try {
+      const searchText = req.query.searchText as string;
+      const lokasi = req.query.lokasi as string;
+      const minPrice = parseInt(req.query.minPrice as string) || undefined;
+      const maxPrice = parseInt(req.query.maxPrice as string) || undefined;
+      const skip = parseInt(req.query.skip as string) || 0;
+      const take = parseInt(req.query.take as string) || 10;
+
+      const searchResults = await PostService.searchQuery(searchText, lokasi, minPrice, maxPrice, skip, take);
+
+      res.json(searchResults);
+    } catch (error: any) {
+      console.error('Error:', error);
+      res.status(500).json({ error: error.message })
+    }
+  }
 }
 
 export default PostsController
