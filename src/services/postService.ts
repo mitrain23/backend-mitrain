@@ -299,14 +299,14 @@ class PostService {
     if (strMinPrice !== undefined) {
       // Apply minPrice filter if minPrice is not undefined
       whereClause.priceMin = {
-        contains: strMinPrice
+        gte: strMinPrice
       }
     }
 
     if (strMaxPrice !== undefined) {
       // Apply maxPrice filter if maxPrice is not undefined
       whereClause.priceMax = {
-        contains: strMaxPrice
+        lte: strMaxPrice
       }
     }
 
