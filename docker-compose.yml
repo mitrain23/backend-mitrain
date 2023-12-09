@@ -12,19 +12,6 @@ services:
       PORT: 2000
       JWT_SECRET: diuwahiuwahdaiu23133212uihdwa
 
-  mysql:
-    image: mysql:latest
-    container_name: mysql
-    restart: always
-    command: --port=1002
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: mitraindb
-    volumes:
-      - mitrain-db:/var/lib/mysql
-    ports:
-      - '1002:1002'
-
 networks:
   default:
     external: true
