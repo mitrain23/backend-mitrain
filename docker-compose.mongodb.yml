@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    ports:
+      - '2717:27017'
+    volumes:
+      - mongodb-data:/var/lib/mongodb
+
+networks:
+  default:
+    external: true
+    name: proxy
+
+volumes:
+  mongodb-data:
+
+  

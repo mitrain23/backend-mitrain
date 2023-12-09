@@ -1,4 +1,4 @@
-FROM node:16
+FROM node:18.12.1-alpine
 
 # Set working directory
 WORKDIR /app
@@ -22,4 +22,4 @@ RUN npm run generate
 
 EXPOSE 2000
 
-CMD npm run migrate && node dist/indexjs
+CMD npm run migrate
