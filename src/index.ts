@@ -3,7 +3,11 @@ import cors from 'cors';
 import router from './routes/userRoute';
 import allRoutes from './routes';
 import path from 'path';
+import * as socketIo from 'socket.io';
+import connectDB from './utils/db';
+import { User } from '@prisma/client';
 require('dotenv').config();
+connectDB();
 
 /**
  * -------------- GENERAL SETUP ----------------
@@ -50,18 +54,90 @@ app.use(allRoutes)
 
 // root route
 app.get('/', (req, res) => {
-    const nodeEnv = process.env.NODE_ENV;
-    res.send(`API ready in ${nodeEnv} environment`);
+  const nodeEnv = process.env.NODE_ENV;
+  res.send(`API ready in ${nodeEnv} environment`);
 });
 
 /**
  * -------------- SERVER ----------------
  */
 
-app
-  .listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`⚡️[server]: Server running on port ${PORT}`);
   })
   .on('error', (err: Error) => {
     console.log(err);
   });
+
+/**
+* -------------- SOCKET IO ----------------
+*/
+
+interface ServerToClientEvents {
+  setup: (userData: User) => void;
+  connected: () => void; 
+  joinChat: (room: string, name: string) => void;
+  messageReceived: (newMessageRecieved: { chat: any, sender: any }) => void;
+}
+
+
+interface ClientToServerEvents {
+  setup: (userData: User) => void;
+  joinChat: (room: string, name: string) => void;
+  newMessage: (newMessageRecieved: { chat: any, sender: any }) => void;
+}
+
+interface InterServerEvents {
+  ping: () => void;
+}
+
+interface SocketData {
+  name: string;
+  age: number;
+}
+
+
+const io = new socketIo.Server<
+ClientToServerEvents,
+ServerToClientEvents,
+InterServerEvents,
+SocketData
+>(server, {
+  pingTimeout: 60000,
+  cors: {
+    origin: '*',
+    // credentials: true,
+  },
+} );
+
+
+
+io.on("connection", (socket: any) => {
+  console.log("Connected to socket.io");
+  socket.on("setup", (userData: User) => {
+    socket.join(userData.id);
+    socket.emit("connected");
+  });
+
+  socket.on("joinChat", (room: string, name: string) => {
+    socket.join(room);
+    console.log(`User ${name} Joined Room: ` + room);
+  });
+
+  socket.on("newMessage", (newMessageRecieved: { chat: any, sender: any }) => {
+    var chat = newMessageRecieved.chat;
+
+    if (!chat.users) return console.log("chat.users not defined");
+
+    chat.users.forEach((user : User) => {
+      if (user.id == newMessageRecieved.sender.id) return;
+
+      socket.in(user.id).emit("messageReceived", newMessageRecieved);
+    });
+  });
+
+  socket.off("setup", (userData: User) => {
+    console.log("USER DISCONNECTED");
+    socket.leave(userData.id);
+  });
+});
