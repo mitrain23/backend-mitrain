@@ -138,7 +138,7 @@ export async function processChatData(chats: any[], prisma: any): Promise<any[]>
           content: latestMessageData.content,
           sender: senderUserData || latestMessageData.sender, // Use senderUserData if available
           chat: latestMessageData.chat,
-          readBy: latestMessageData.readBy || [],
+          isRead: latestMessageData.isRead,
           createdAt: latestMessageData.createdAt,
           updatedAt: latestMessageData.updatedAt,
           __v: latestMessageData.__v,

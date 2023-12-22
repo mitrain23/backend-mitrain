@@ -3,9 +3,10 @@ import MessageController from '../controllers/messageController';
 import { verifyTokenMitra } from '../utils/verifyTokenMitra'
 const router = express.Router()
 
-
 router.get("/:chatId",verifyTokenMitra, MessageController.allMessages);
 router.post("/",verifyTokenMitra, MessageController.sendMessage);
+
+router.put("/:messageId",verifyTokenMitra, MessageController.changeIsRead);
 
 // status
 router.get('/status', (req, res) => {

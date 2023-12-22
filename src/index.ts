@@ -115,25 +115,43 @@ SocketData
 io.on("connection", (socket: any) => {
   console.log("Connected to socket.io");
   socket.on("setup", (userData: User) => {
-    socket.join(userData.id);
-    socket.emit("connected");
+    try {
+      socket.join(userData.id);
+      socket.emit("connected");
+    } catch (error) {
+      console.error("Error in handling 'setup' event:", error);
+      socket.emit("setupError", { message: "Failed to handle 'setup' event" });
+    }
   });
 
   socket.on("joinChat", (room: string, name: string) => {
-    socket.join(room);
-    console.log(`User ${name} Joined Room: ` + room);
+    try {
+      socket.join(room);
+      console.log(`User ${name} joined Room: ${room}`);
+    } catch (error: any) {
+      console.error("Error in handling 'joinChat' event:", error.message);
+      socket.emit("joinChatError", { message: "Failed to join chat room" });
+    }
   });
 
   socket.on("newMessage", (newMessageRecieved: { chat: any, sender: any }) => {
-    var chat = newMessageRecieved.chat;
+    try {
+      var chat = newMessageRecieved.chat;
 
-    if (!chat.users) return console.log("chat.users not defined");
+      if (!chat.users) {
+        console.log("chat.users not defined");
+        return;
+      }
 
-    chat.users.forEach((user : User) => {
-      if (user.id == newMessageRecieved.sender.id) return;
+      chat.users.forEach((user : User) => {
+        if (user.id == newMessageRecieved.sender.id) return;
 
-      socket.in(user.id).emit("messageReceived", newMessageRecieved);
-    });
+        socket.in(user.id).emit("messageReceived", newMessageRecieved);
+      });
+    } catch (error:any) {
+      console.error("Error in handling 'newMessage' event:", error.message);
+      socket.emit("newMessageError", { message: "Failed to handle 'newMessage' event" });
+    }
   });
 
   socket.off("setup", (userData: User) => {
