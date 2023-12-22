@@ -242,10 +242,9 @@ class MessageController {
 
   static async unreadMessages(req: Request, res: Response) {
     try {
-      const chatId = req.params.chatId;
       const userId = req.body.userId;
 
-      if (!chatId || !userId) {
+      if (!userId) {
         console.log('Invalid data passed into request');
         return res.status(400).send({ message: 'Invalid data passed into request' });
       }
@@ -260,7 +259,7 @@ class MessageController {
       if (unreadMessages.length === 0) {
         return res.status(404).json({ message: "No unread messages found" });
       }
-      
+
       // Convert messages to plain objects to modify sender and users fields
       const unreadMessagesData = unreadMessages.map((message: { toObject: () => any; }) => message.toObject());
 
