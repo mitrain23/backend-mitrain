@@ -207,47 +207,148 @@ class MessageController {
   //@access          Protected
   static async changeIsRead(req: Request, res: Response) {
     try {
-      const messageId = req.params.messageId;
+      const chatId = req.params.chatId;
       const userId = req.body.userId;
 
-      if (!messageId || !userId) {
+      if (!chatId || !userId) {
         console.log('Invalid data passed into request');
         return res.status(400).send({ message: 'Invalid data passed into request' });
       }
 
-      console.log("dari controller",userId)
+      console.log("dari controller", userId);
+
       // Memeriksa apakah userId berada di dalam satu chat
-      const IsUserInChat = await isUserInChat(userId, messageId);
+      const IsUserInChat = await isUserInChat(userId, chatId);
 
       if (!IsUserInChat) {
         console.log('User is not in the chat');
         return res.status(403).send({ message: 'User is not in the chat' });
       }
 
-      // Update isRead to true based on messageId
-      const savedMessage = await Message.findByIdAndUpdate(messageId, { isRead: true });
+      // Update isRead to true for all messages with the specified chatId
+      const updateResult = await Message.updateMany(
+        { chat: chatId },
+        { $set: { isRead: true } }
+      );
 
-      res.status(200).json({message:'Update status isRead success'});
+      console.log(updateResult);
+
+      res.status(200).json({ message: 'Update status isRead for all messages success' });
     } catch (error: any) {
       res.status(500).json(error.message)
       console.error('Error update isRead:', error.message);
     }
   }
+
+  static async unreadMessages(req: Request, res: Response) {
+    try {
+      const chatId = req.params.chatId;
+      const userId = req.body.userId;
+
+      if (!chatId || !userId) {
+        console.log('Invalid data passed into request');
+        return res.status(400).send({ message: 'Invalid data passed into request' });
+      }
+
+      // Find all messages where isRead is false and the user is in the chat
+      const unreadMessages = await Message.find({
+        isRead: false,
+        chat: { $in: await getChatIdsByUserId(userId) },
+      }).populate("chat");
+
+      // Check if there are no unread messages
+      if (unreadMessages.length === 0) {
+        return res.status(404).json({ message: "No unread messages found" });
+      }
+      
+      // Convert messages to plain objects to modify sender and users fields
+      const unreadMessagesData = unreadMessages.map((message: { toObject: () => any; }) => message.toObject());
+
+      for (const message of unreadMessagesData) {
+        // Retrieve sender's user data from Prisma
+        const senderUserData = await prisma.user.findUnique({
+          where: {
+            id: message.sender,
+          },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            images: {
+              select: {
+                id: true,
+                userId: true,
+                postId: true,
+                url: true,
+              },
+            },
+          },
+        });
+
+        if (!senderUserData) {
+          // Handle the case where senderUserData is null (sender not found)
+          console.log("Sender not found");
+          return res.status(404).send({ message: "Sender not found" });
+        }
+
+        // Retrieve chat's user data from Prisma
+        const chatUserData = await prisma.user.findMany({
+          where: {
+            id: {
+              in: message.chat.users,
+            },
+          },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            images: {
+              select: {
+                id: true,
+                userId: true,
+                postId: true,
+                url: true,
+              },
+            },
+          },
+        });
+
+        // Update sender and users fields with the retrieved data
+        message.sender = {
+          id: senderUserData.id,
+          name: senderUserData.name,
+          email: senderUserData.email,
+          images: senderUserData.images,
+        };
+
+        message.chat.users = chatUserData.map((user) => ({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          images: user.images,
+        }));
+      }
+
+      res.status(200).json({ data: unreadMessagesData });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+}
+// Helper function to get chatIds based on userId
+export async function getChatIdsByUserId(userId: string): Promise<string[]> {
+  try {
+    const userChats = await Chat.find({ users: userId }, '_id');
+    return userChats.map((chat: { _id: { toString: () => any; }; }) => chat._id.toString());
+  } catch (error: any) {
+    console.error('Error getting chatIds by userId:', error.message);
+    throw error;
+  }
 }
 
 // Fungsi untuk memeriksa apakah userId berada di dalam satu chat
-export async function isUserInChat(userId: string, messageId: string): Promise<boolean> {
+export async function isUserInChat(userId: string, chatId: string): Promise<boolean> {
   try {
-    
-    const message = await Message.findById(messageId);
-    if (!message) {
-      throw new Error('Message not found');
-    }
-
-    const chatId = message.chat;
-
-    console.log(chatId)
-    console.log(userId)
     const isUserInChat = await Chat.exists({
       _id: new ObjectId(chatId),
       users: userId,
