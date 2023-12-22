@@ -7,7 +7,7 @@ const messageSchema = new mongoose.Schema({
   content: { type: String, required: true },
   sender: { type: String, required: true }, 
   chat: { type: mongoose.Schema.Types.ObjectId, ref: "Chat" },
-  readBy: [{ type: String }],
+  isRead: { type: Boolean, default: false},
 }, { timestamps: true });
 
 const chatSchema = new mongoose.Schema({
