@@ -41,6 +41,7 @@ class ChatController {
 					chatName: "sender",
 					isGroupChat: false,
 					users: [req.body.userId, userId],
+					product_Id: req.body.product_id
 				});
 
 				const savedChat = await newChat.save();
@@ -120,6 +121,7 @@ export async function processChatData(chats: any[], prisma: any): Promise<any[]>
       return {
         _id: chat._id,
         chatName: chat.chatName,
+		product_Id: chat.product_Id,
         isGroupChat: chat.isGroupChat,
         users: usersData
           .filter((user: User) => chat.users.includes(user.id))
