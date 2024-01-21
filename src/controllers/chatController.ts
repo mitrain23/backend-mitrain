@@ -13,7 +13,7 @@ class ChatController {
 		try {
 			const { Id } = req.body;
 
-			const userId = Id
+			const userId = "d1b2064a-d4d6-474e-8e45-209c52b1b27f"
 
 			if (!userId) {
 				console.log("UserId param not sent with request");
