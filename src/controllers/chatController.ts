@@ -15,23 +15,20 @@ class ChatController {
 
 			const userId = "d1b2064a-d4d6-474e-8e45-209c52b1b27f"
 
-			if (!userId) {
-				console.log("UserId param not sent with request");
-				return res
-					.status(400)
-					.send("UserId param not sent with request");
-			}
+			// if (!userId) {
+			// 	console.log("UserId param not sent with request");
+			// 	return res
+			// 		.status(400)
+			// 		.send("UserId param not sent with request");
+			// }
+			// await usersExist([userId]);
 
-			await usersExist([userId]);
-
-			var isChat = await Chat.find({
-				isGroupChat: false,
-				$and: [
-					{ users: { $elemMatch: { $eq: req.body.userId } } },
-					{ users: { $elemMatch: { $eq: userId } } },
-				],
-			}).populate("latestMessage");
-
+			const isChat = await Chat.find({
+				users: { $in: [req.body.userId] },
+				product_Id: { $eq: req.body.product_id }
+			  })
+			  .populate('latestMessage')
+			  .exec();
 
 			if (isChat.length > 0) {
 				const responseData = await processChatData(isChat, prisma);
@@ -83,6 +80,7 @@ export async function processChatData(chats: any[], prisma: any): Promise<any[]>
 		return userIds.concat(chat.users);
 	}, []);
 
+	console.log('tes');
 	const uniqueUserIds = Array.from(new Set(allUserIds)) as string[];
 
 	const usersData = await prisma.user.findMany({
