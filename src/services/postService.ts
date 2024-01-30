@@ -118,6 +118,7 @@ class PostService {
 
     const createdPost = await prisma.post.create({
       data: {
+        merchant_name: isMitra.name,
         title,
         description,
         priceMin,

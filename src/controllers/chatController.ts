@@ -11,7 +11,7 @@ class ChatController {
 	//@access          Protected
 	static async accessChat(req: Request, res: Response) {
 		try {
-			const { Id } = req.body;
+			const { product_id } = req.body;
 
 			const userId = "d1b2064a-d4d6-474e-8e45-209c52b1b27f"
 
@@ -22,10 +22,18 @@ class ChatController {
 			// 		.send("UserId param not sent with request");
 			// }
 			// await usersExist([userId]);
+			const post = await prisma.post.findUnique({
+				where: {
+				  id: product_id
+				}
+			  })
+			  if (!post) {
+				throw new Error('Cannot find post (product id)')
+			  }
 
 			const isChat = await Chat.find({
 				users: { $in: [req.body.userId] },
-				product_Id: { $eq: req.body.product_id }
+				product_Id: { $eq: post.id }
 			  })
 			  .populate('latestMessage')
 			  .exec();
@@ -38,7 +46,8 @@ class ChatController {
 					chatName: "sender",
 					isGroupChat: false,
 					users: [req.body.userId, userId],
-					product_Id: req.body.product_id
+					product_Id: post.id,
+					product_name: post.title
 				});
 
 				const savedChat = await newChat.save();
@@ -120,6 +129,7 @@ export async function processChatData(chats: any[], prisma: any): Promise<any[]>
         _id: chat._id,
         chatName: chat.chatName,
 		product_Id: chat.product_Id,
+		product_name: chat.product_name,
         isGroupChat: chat.isGroupChat,
         users: usersData
           .filter((user: User) => chat.users.includes(user.id))

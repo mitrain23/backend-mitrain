@@ -49,6 +49,7 @@ model Post {
   isLiked          Boolean?
   phoneIntWhatsapp String   @db.VarChar(15)
   phoneIntContact  String   @db.VarChar(15)
+  merchant_name     String   @db.VarChar(100)
   mitraId          String
   mitra            Mitra    @relation(fields: [mitraId], references: [id])
   images           Image[]
