@@ -14,6 +14,7 @@ const chatSchema = new mongoose.Schema({
   chatName: { type: String, required: true },
   isGroupChat: { type: Boolean, default: false },
   product_Id: { type: String, required: true },
+  product_name: { type: String, required: true },
   users: [{ type: String, required: true }],
   latestMessage: { type: mongoose.Schema.Types.ObjectId, ref: 'Message' },
   groupAdmin: { type: String },
