@@ -171,6 +171,7 @@ class PostService {
         category: postData.category,
         mitraId: mitraId,
         isLiked: postData.isLiked || false,
+        merchant_name: postData.merchant_name
       }
 
       // Cari post berdasarkan ID
