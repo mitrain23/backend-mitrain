@@ -6,6 +6,54 @@ import jwt from 'jsonwebtoken'
 require('dotenv').config()
 
 class UserService {
+  static async registerAdmin(userData: UserModel) {
+    const {
+      email,
+      password,
+      name,
+      address,
+      phoneIntWhatsapp,
+      phoneIntContact
+    } = userData
+
+    if (
+      !email ||
+      !password ||
+      !name ||
+      !address ||
+      !phoneIntWhatsapp ||
+      !phoneIntContact
+    ) {
+      throw Error('Fill all the require data')
+    }
+
+    const existingUser = await prisma.user.findUnique({
+      where: { email: email, isAdmin: true }
+    })
+
+    if (existingUser) {
+      throw Error('Admin already exists')
+    }
+
+    const hashPassword = await bcrypt.hash(password, 10)
+
+    const newUser = await prisma.user.create({
+      data: {
+        email,
+        password: hashPassword,
+        name,
+        address,
+        phoneIntContact,
+        phoneIntWhatsapp,
+        isPremium: false,
+        isMitra: false,
+        isAdmin: true,
+      },
+    })
+
+    return newUser
+  }
+
   static async registerUser(userData: UserModel, images: any) {
     const {
       email,

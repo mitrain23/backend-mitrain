@@ -4,6 +4,7 @@ import upload from '../utils/multer'
 
 const router = express.Router();
 
+router.post('/registerAdmin', AuthController.registerAdmin)
 router.post('/registerUser', upload.single('images'), AuthController.registerUser)
 router.post(
   '/registerMitra',
