@@ -58,7 +58,8 @@ class PostsController {
         location,
         phoneIntWhatsapp,
         phoneIntContact,
-        category
+        category,
+        merchant_name
       } = req.body
       const postData = {
         title,
@@ -68,7 +69,8 @@ class PostsController {
         location,
         phoneIntWhatsapp,
         phoneIntContact,
-        category
+        category,
+        merchant_name
       }
       const images = req.files
       const mitra = req.body.userId
@@ -190,12 +192,13 @@ class PostsController {
     try {
       const searchText = req.query.searchText as string;
       const lokasi = req.query.lokasi as string;
+      const merchant_name = req.query.merchant_name as string;
       const minPrice = parseInt(req.query.minPrice as string) || undefined;
       const maxPrice = parseInt(req.query.maxPrice as string) || undefined;
       const skip = parseInt(req.query.skip as string) || 0;
       const take = parseInt(req.query.take as string) || 10;
 
-      const searchResults = await PostService.searchQuery(searchText, lokasi, minPrice, maxPrice, skip, take);
+      const searchResults = await PostService.searchQuery(searchText, lokasi, minPrice, maxPrice, skip, take, merchant_name);
 
       res.json(searchResults);
     } catch (error: any) {

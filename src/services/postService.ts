@@ -73,7 +73,8 @@ class PostService {
       location,
       phoneIntWhatsapp,
       phoneIntContact,
-      category
+      category,
+      merchant_name
     } = postData
     const image = images.map((file: any) => file.filename)
     const mitraId = mitra
@@ -87,14 +88,6 @@ class PostService {
       !phoneIntContact
     ) {
       throw Error('Fill all the require data')
-    }
-
-    const isMitra = await prisma.user.findUnique({
-      where: { id: mitraId, isMitra: true }
-    })
-
-    if (!isMitra) {
-      throw Error('User is not mitra')
     }
 
     const existingCategory = await prisma.category.findUnique({
@@ -118,7 +111,7 @@ class PostService {
 
     const createdPost = await prisma.post.create({
       data: {
-        merchant_name: isMitra.name,
+        merchant_name: merchant_name,
         title,
         description,
         priceMin,
@@ -290,7 +283,8 @@ class PostService {
     minPrice: number | undefined,
     maxPrice: number | undefined,
     skip: number,
-    take: number
+    take: number,
+    merchant_nama: string
   ) {
     const search = searchText || ''
     const location = lokasi || ''
@@ -298,6 +292,7 @@ class PostService {
     const strMaxPrice = maxPrice !== undefined ? String(maxPrice) : undefined
     const skipPage = skip || 0
     const takePage = take || 10
+    const merchant_name = merchant_nama || ''
 
 
     let whereClause: any = {}
@@ -306,6 +301,13 @@ class PostService {
       // Apply search filter if searchText is not empty
       whereClause.title = {
         contains: search
+      }
+    }
+
+    if (merchant_name !== '') {
+      // Apply location filter if lokasi is not empty
+      whereClause.merchant_name = {
+        contains: merchant_name
       }
     }
 
