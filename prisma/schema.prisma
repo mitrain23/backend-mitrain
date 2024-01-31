@@ -20,6 +20,7 @@ model User {
   phoneIntContact  String   @db.VarChar(15)
   isPremium        Boolean?
   isMitra          Boolean  @default(false)
+  isAdmin          Boolean  @default(false)
   Mitra            Mitra[]
   images           Image[]
 
