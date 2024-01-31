@@ -5,6 +5,36 @@ import { compressImage } from '../utils/compressImage'
 import MitraService from '../services/mitraService'
 
 class AuthController {
+  static async registerAdmin(req: Request, res: Response): Promise<any> {
+    try {
+      const {
+        email,
+        password,
+        name,
+        address,
+        phoneIntWhatsapp,
+        phoneIntContact
+      } = req.body
+
+      const userData = {
+        email,
+        password,
+        name,
+        address,
+        phoneIntWhatsapp,
+        phoneIntContact
+      }
+
+      const newUser = await UserService.registerAdmin(userData)
+
+      res.status(200).json({
+        data: newUser
+      })
+    } catch (err: any) {
+      res.status(500).json({ error: err.message })
+    }
+  }
+
   static async registerUser(req: Request, res: Response): Promise<any> {
     try {
       const {

@@ -266,7 +266,15 @@ class PostService {
     if (!post) {
       throw new Error('Cannot find post')
     }
-    if (mitra !== post.mitraId) {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: mitra
+      }
+    })
+    if (!user) {
+      throw new Error('Cannot find user')
+    }
+    if (user.id !== post.mitraId && !user.isAdmin ) {
       throw new Error('You are not the owner of post')
     } else {
       const deletedPost = await prisma.post.delete({
