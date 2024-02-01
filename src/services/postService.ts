@@ -188,9 +188,20 @@ class PostService {
         return ({ error: 'Post not found' });
       }
 
-      // Cek apakah pengguna memiliki hak akses untuk mengupdate post
-      if (post.mitraId !== mitraId) {
-        return ({ error: 'You are not the owner of this post' });
+      const user = await prisma.user.findUnique({
+        where: {
+          id: mitraId
+        }
+      })
+      
+      if (!user) {
+        throw new Error('Cannot find user')
+      }
+
+      if ( user.id !== post.mitraId) {
+        if (!user.isAdmin){
+          throw new Error('You are not the owner of post');
+        }
       }
 
       // Filter gambar yang memiliki ID (untuk update)
@@ -274,16 +285,20 @@ class PostService {
     if (!user) {
       throw new Error('Cannot find user')
     }
-    if (user.id !== post.mitraId && !user.isAdmin ) {
-      throw new Error('You are not the owner of post')
-    } else {
-      const deletedPost = await prisma.post.delete({
-        where: {
-          id: id
-        }
-      })
-      return deletedPost
+
+    if ( user.id !== post.mitraId) {
+      if (!user.isAdmin){
+        throw new Error('You are not the owner of post');
+      }
     }
+    
+    const deletedPost = await prisma.post.delete({
+      where: {
+        id: id,
+      },
+    });
+
+    return deletedPost;
   }
 
   static async searchQuery(
