@@ -160,20 +160,6 @@ class PostService {
     try {
       const maxImageCount = 5;
 
-      const postDataInput = {
-        title: postData.title,
-        description: postData.description,
-        priceMin: postData.priceMin,
-        priceMax: postData.priceMax,
-        location: postData.location,
-        phoneIntWhatsapp: postData.phoneIntWhatsapp,
-        phoneIntContact: postData.phoneIntContact,
-        category: postData.category,
-        mitraId: mitraId,
-        isLiked: postData.isLiked || false,
-        merchant_name: postData.merchant_name
-      }
-
       // Cari post berdasarkan ID
       const post = await prisma.post.findUnique({
         where: {
@@ -186,6 +172,20 @@ class PostService {
 
       if (!post) {
         return ({ error: 'Post not found' });
+      }
+
+      const postDataInput = {
+        title: postData.title,
+        description: postData.description,
+        priceMin: postData.priceMin,
+        priceMax: postData.priceMax,
+        location: postData.location,
+        phoneIntWhatsapp: postData.phoneIntWhatsapp,
+        phoneIntContact: postData.phoneIntContact,
+        category: postData.category,
+        mitraId: post.mitraId,
+        isLiked: postData.isLiked || false,
+        merchant_name: postData.merchant_name
       }
 
       const user = await prisma.user.findUnique({
