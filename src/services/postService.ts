@@ -98,16 +98,16 @@ class PostService {
       throw Error('Category not exists')
     }
 
-    const existingPost = await prisma.post.findFirst({
-      where: {
-        mitraId,
-        category,
-      },
-    });
+    // const existingPost = await prisma.post.findFirst({
+    //   where: {
+    //     mitraId,
+    //     category,
+    //   },
+    // });
   
-    if (existingPost) {
-      throw Error('Mitra has already created a post in this category');
-    }
+    // if (existingPost) {
+    //   throw Error('Mitra has already created a post in this category');
+    // }
 
     const createdPost = await prisma.post.create({
       data: {
