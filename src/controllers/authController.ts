@@ -13,7 +13,8 @@ class AuthController {
         name,
         address,
         phoneIntWhatsapp,
-        phoneIntContact
+        phoneIntContact,
+        categoryName
       } = req.body
 
       const userData = {
@@ -22,7 +23,8 @@ class AuthController {
         name,
         address,
         phoneIntWhatsapp,
-        phoneIntContact
+        phoneIntContact,
+        categoryName,
       }
 
       const newUser = await UserService.registerAdmin(userData)

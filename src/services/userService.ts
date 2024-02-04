@@ -3,17 +3,19 @@ import { validationResult } from 'express-validator'
 import { UserModel } from '../models/userModel'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import { MitraModel } from '../models/mitraModel'
 require('dotenv').config()
 
 class UserService {
-  static async registerAdmin(userData: UserModel) {
+  static async registerAdmin(userData: any) {
     const {
       email,
       password,
       name,
       address,
       phoneIntWhatsapp,
-      phoneIntContact
+      phoneIntContact,
+      categoryName,
     } = userData
 
     if (
@@ -35,9 +37,17 @@ class UserService {
       throw Error('Admin already exists')
     }
 
+    const existingCategory = await prisma.category.findUnique({
+      where: { categoryName: categoryName }
+    })
+
+    if (!existingCategory) {
+      throw Error('Category not exists')
+    }
+
     const hashPassword = await bcrypt.hash(password, 10)
 
-    const newUser = await prisma.user.create({
+    const newAdmin = await prisma.user.create({
       data: {
         email,
         password: hashPassword,
@@ -45,13 +55,28 @@ class UserService {
         address,
         phoneIntContact,
         phoneIntWhatsapp,
-        isPremium: false,
-        isMitra: false,
+        Mitra: {
+          create: {
+            description : '',
+            experience: '',
+            categoryName: existingCategory.categoryName,
+          },
+        },
+        isPremium: true,
+        isMitra: true,
         isAdmin: true,
+        images: {
+          createMany: {
+            data: {
+              url: ''
+            }
+          }
+        }
       },
-    })
+    });
 
-    return newUser
+
+    return newAdmin
   }
 
   static async registerUser(userData: UserModel, images: any) {
