@@ -308,8 +308,11 @@ class PostService {
     maxPrice: number | undefined,
     skip: number,
     take: number,
-    merchant_nama: string
+    merchant_nama: string,
+    orderBy: string,
+    categoryName: string,
   ) {
+    const category_Name = categoryName || ''
     const search = searchText || ''
     const location = lokasi || ''
     const strMinPrice = minPrice !== undefined ? String(minPrice) : undefined
@@ -320,6 +323,12 @@ class PostService {
 
 
     let whereClause: any = {}
+    let orderByOption: any = {};
+
+    if (orderBy === 'asc' || orderBy === 'desc') {
+      // Apply orderBy filter if valid option is provided
+      orderByOption.createdAt = orderBy;
+    }
 
     if (search !== '') {
       // Apply search filter if searchText is not empty
@@ -333,6 +342,13 @@ class PostService {
       whereClause.merchant_name = {
         contains: merchant_name
       }
+    }
+
+    if (category_Name !== '') {
+      // Apply category filter if categoryName is not empty
+      whereClause.category = {
+        contains: category_Name
+      };
     }
 
     if (location !== '') {
@@ -356,6 +372,8 @@ class PostService {
       }
     }
 
+    console.log(whereClause);
+
     const results = await prisma.post.findMany({
       where: whereClause,
       include: {
@@ -370,6 +388,7 @@ class PostService {
         },
         images: { select: { url: true } }
       },
+      orderBy: orderByOption,
       skip: skipPage,
       take: takePage
     })

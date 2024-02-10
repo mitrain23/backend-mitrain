@@ -190,6 +190,8 @@ class PostsController {
 
   static async searchQuery(req: Request, res: Response) {
     try {
+      const orderBy = req.query.orderBy as string;
+      const categoryName = req.query.categoryName as string;
       const searchText = req.query.searchText as string;
       const lokasi = req.query.lokasi as string;
       const merchant_name = req.query.merchant_name as string;
@@ -198,7 +200,7 @@ class PostsController {
       const skip = parseInt(req.query.skip as string) || 0;
       const take = parseInt(req.query.take as string) || 10;
 
-      const searchResults = await PostService.searchQuery(searchText, lokasi, minPrice, maxPrice, skip, take, merchant_name);
+      const searchResults = await PostService.searchQuery(searchText, lokasi, minPrice, maxPrice, skip, take, merchant_name, orderBy, categoryName);
 
       res.json(searchResults);
     } catch (error: any) {
