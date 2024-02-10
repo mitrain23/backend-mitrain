@@ -11,36 +11,39 @@ datasource db {
 }
 
 model User {
-  id               String   @id @default(uuid())
-  name             String   @db.VarChar(100)
-  email            String   @unique
-  password         String   @db.VarChar(100)
-  address          String   @db.VarChar(255)
-  phoneIntWhatsapp String   @db.VarChar(15)
-  phoneIntContact  String   @db.VarChar(15)
+  id               String    @id @default(uuid())
+  name             String    @db.VarChar(100)
+  email            String    @unique
+  password         String    @db.VarChar(100)
+  address          String    @db.VarChar(255)
+  phoneIntWhatsapp String    @db.VarChar(15)
+  phoneIntContact  String    @db.VarChar(15)
   isPremium        Boolean?
-  isMitra          Boolean  @default(false)
-  isAdmin          Boolean  @default(false)
+  isMitra          Boolean   @default(false)
+  isAdmin          Boolean   @default(false)
   Mitra            Mitra[]
   images           Image[]
-
+  createdAt        DateTime  @default(now())
+    updatedAt       DateTime? @updatedAt
   @@map("users")
 }
 
 model Mitra {
-  id               String   @id @default(uuid())
-  categoryName     String
-  description      String
-  experience       String
-  user             User     @relation(fields: [id], references: [id])
-  category         Category @relation(fields: [categoryName], references: [categoryName])
-  post             Post[]
+  id           String    @id @default(uuid())
+  categoryName String
+  description  String
+  experience   String
+  user         User      @relation(fields: [id], references: [id])
+  category     Category  @relation(fields: [categoryName], references: [categoryName])
+  post         Post[]
+  createdAt    DateTime  @default(now())
+    updatedAt       DateTime? @updatedAt
 
   @@map("mitras")
 }
 
 model Post {
-  id               String   @id @default(uuid())
+  id               String    @id @default(uuid())
   title            String
   category         String
   description      String
@@ -48,23 +51,27 @@ model Post {
   priceMax         String
   location         String
   isLiked          Boolean?
-  phoneIntWhatsapp String   @db.VarChar(15)
-  phoneIntContact  String   @db.VarChar(15)
-  merchant_name     String   @db.VarChar(100)
+  phoneIntWhatsapp String    @db.VarChar(15)
+  phoneIntContact  String    @db.VarChar(15)
+  merchant_name    String    @db.VarChar(100)
   mitraId          String
-  mitra            Mitra    @relation(fields: [mitraId], references: [id])
+  mitra            Mitra     @relation(fields: [mitraId], references: [id])
   images           Image[]
+  createdAt        DateTime  @default(now())
+    updatedAt       DateTime? @updatedAt
 
   @@map("posts")
 }
 
 model Image {
-  id      String  @id @default(uuid())
-  userId  String? 
-  postId  String?
-  url     String?
-  user    User?   @relation(fields: [userId], references: [id])
-  post    Post?   @relation(fields: [postId], references: [id])
+  id        String    @id @default(uuid())
+  userId    String?
+  postId    String?
+  url       String?
+  user      User?     @relation(fields: [userId], references: [id])
+  post      Post?     @relation(fields: [postId], references: [id])
+  createdAt DateTime  @default(now())
+   updatedAt       DateTime? @updatedAt
 }
 
 model Category {
@@ -72,11 +79,15 @@ model Category {
   categoryName String        @unique
   Mitra        Mitra[]
   Subcategory  Subcategory[]
+  createdAt    DateTime      @default(now())
+    updatedAt       DateTime? @updatedAt
 }
 
 model Subcategory {
-  id              String   @id @default(uuid())
-  subcategoryName String   @unique
+  id              String    @id @default(uuid())
+  subcategoryName String    @unique
   categoryName    String
-  category        Category @relation(fields: [categoryName], references: [categoryName])
+  category        Category  @relation(fields: [categoryName], references: [categoryName])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime? @updatedAt
 }
