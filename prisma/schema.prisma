@@ -24,7 +24,8 @@ model User {
   Mitra            Mitra[]
   images           Image[]
   createdAt        DateTime  @default(now())
-    updatedAt       DateTime? @updatedAt
+  updatedAt        DateTime? @updatedAt
+
   @@map("users")
 }
 
@@ -34,10 +35,10 @@ model Mitra {
   description  String
   experience   String
   user         User      @relation(fields: [id], references: [id])
-  category     Category  @relation(fields: [categoryName], references: [categoryName])
+  // category     Category  @relation(fields: [categoryName], references: [categoryName])
   post         Post[]
   createdAt    DateTime  @default(now())
-    updatedAt       DateTime? @updatedAt
+  updatedAt    DateTime? @updatedAt
 
   @@map("mitras")
 }
@@ -57,8 +58,9 @@ model Post {
   mitraId          String
   mitra            Mitra     @relation(fields: [mitraId], references: [id])
   images           Image[]
+  categoryTable    Category  @relation(fields: [category], references: [categoryName], onDelete: Cascade)
   createdAt        DateTime  @default(now())
-    updatedAt       DateTime? @updatedAt
+  updatedAt        DateTime? @updatedAt
 
   @@map("posts")
 }
@@ -71,23 +73,23 @@ model Image {
   user      User?     @relation(fields: [userId], references: [id])
   post      Post?     @relation(fields: [postId], references: [id])
   createdAt DateTime  @default(now())
-   updatedAt       DateTime? @updatedAt
+  updatedAt DateTime? @updatedAt
 }
 
 model Category {
   id           String        @id @default(uuid())
   categoryName String        @unique
-  Mitra        Mitra[]
+  posts        Post[]
   Subcategory  Subcategory[]
   createdAt    DateTime      @default(now())
-    updatedAt       DateTime? @updatedAt
+  updatedAt    DateTime?     @updatedAt
 }
 
 model Subcategory {
   id              String    @id @default(uuid())
   subcategoryName String    @unique
   categoryName    String
-  category        Category  @relation(fields: [categoryName], references: [categoryName])
+  category        Category  @relation(fields: [categoryName], references: [categoryName], onDelete: Cascade)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime? @updatedAt
 }
