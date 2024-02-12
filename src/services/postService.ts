@@ -16,6 +16,7 @@ class PostService {
       include: {
         mitra: {
           select: {
+            experience: true,
             user: {
               select: {
                 name: true
@@ -48,6 +49,7 @@ class PostService {
       include: {
         mitra: {
           select: {
+            experience: true,
             user: {
               select: {
                 name: true
@@ -132,10 +134,11 @@ class PostService {
       include: {
         mitra: {
           select: {
+            experience: true,
             user: {
               select: {
                 name: true,
-                email: true
+                email: true,
               }
             }
           }
@@ -379,6 +382,7 @@ class PostService {
       include: {
         mitra: {
           select: {
+            experience: true,
             user: {
               select: {
                 name: true
