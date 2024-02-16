@@ -132,11 +132,6 @@ class MitraService {
             categoryName: true,
             experience: true,
             description: true,
-            category: {
-              select: {
-                Subcategory: true
-              }
-            }
           }
         }
       }
