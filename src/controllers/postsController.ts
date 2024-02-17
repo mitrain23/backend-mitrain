@@ -59,7 +59,8 @@ class PostsController {
         phoneIntWhatsapp,
         phoneIntContact,
         category,
-        merchant_name
+        merchant_name,
+        experience
       } = req.body
       const postData = {
         title,
@@ -70,7 +71,8 @@ class PostsController {
         phoneIntWhatsapp,
         phoneIntContact,
         category,
-        merchant_name
+        merchant_name,
+        experience
       }
       const images = req.files
       const mitra = req.body.userId

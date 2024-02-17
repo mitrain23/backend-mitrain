@@ -48,6 +48,7 @@ model Post {
   title            String
   category         String
   description      String
+  experience       String
   priceMin         String
   priceMax         String
   location         String

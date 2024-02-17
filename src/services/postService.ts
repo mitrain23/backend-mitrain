@@ -16,7 +16,6 @@ class PostService {
       include: {
         mitra: {
           select: {
-            experience: true,
             user: {
               select: {
                 name: true
@@ -49,7 +48,6 @@ class PostService {
       include: {
         mitra: {
           select: {
-            experience: true,
             user: {
               select: {
                 name: true
@@ -76,7 +74,8 @@ class PostService {
       phoneIntWhatsapp,
       phoneIntContact,
       category,
-      merchant_name
+      merchant_name,
+      experience
     } = postData
     const image = images.map((file: any) => file.filename)
     const mitraId = mitra
@@ -87,7 +86,8 @@ class PostService {
       !priceMax ||
       !location ||
       !phoneIntWhatsapp ||
-      !phoneIntContact
+      !phoneIntContact ||
+      !experience
     ) {
       throw Error('Fill all the require data')
     }
@@ -113,6 +113,7 @@ class PostService {
 
     const createdPost = await prisma.post.create({
       data: {
+        experience,
         merchant_name: merchant_name,
         title,
         description,
@@ -188,7 +189,8 @@ class PostService {
         category: postData.category,
         mitraId: post.mitraId,
         isLiked: postData.isLiked || false,
-        merchant_name: postData.merchant_name
+        merchant_name: postData.merchant_name,
+        experience: postData.experience
       }
 
       const user = await prisma.user.findUnique({
