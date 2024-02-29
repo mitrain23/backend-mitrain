@@ -47,7 +47,7 @@ model Post {
   id               String    @id @default(uuid())
   title            String
   category         String
-  description      String
+  description      String   @db.Text
   experience       String
   priceMin         String
   priceMax         String
