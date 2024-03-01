@@ -1,5 +1,6 @@
 import { PostModel } from '../models/postModel'
 import prisma from '../utils/prisma'
+import sanitizeHtml from 'sanitize-html';
 
 class PostService {
   static async getAllPosts(page = 1, pageSize = 10, searchTerm = '') {
@@ -99,7 +100,6 @@ class PostService {
     if (!existingCategory) {
       throw Error('Category not exists')
     }
-    console.log(mitra);
 
     const existingMitra = await prisma.mitra.findUnique({
       where: { id: mitraId },
@@ -111,12 +111,21 @@ class PostService {
 
     console.log('tes');
 
+    const clean = sanitizeHtml(description, {
+      allowedTags: ['p', 'a', 'br', 'ul', 'li', 'strong'],
+      allowedAttributes: {
+        'a': ['href', 'class']
+      }
+    });
+
+    console.log(clean);
+
     const createdPost = await prisma.post.create({
       data: {
         experience,
         merchant_name: merchant_name,
         title,
-        description,
+        description: clean,
         priceMin,
         priceMax,
         location,
