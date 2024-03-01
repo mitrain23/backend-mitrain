@@ -2,6 +2,7 @@ import prisma from '../utils/prisma'
 import { MitraModel } from '../models/mitraModel'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import sanitizeHtml from 'sanitize-html';
 require('dotenv').config()
 
 const salt = 10
