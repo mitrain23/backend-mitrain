@@ -1,68 +1,68 @@
-import { PostModel } from '../models/postModel'
-import prisma from '../utils/prisma'
-import sanitizeHtml from 'sanitize-html';
+import { PostModel } from "../models/postModel";
+import prisma from "../utils/prisma";
+import sanitizeHtml from "sanitize-html";
 
 class PostService {
-  static async getAllPosts(page = 1, pageSize = 10, searchTerm = '') {
-    const offset = (page - 1) * pageSize
+  static async getAllPosts(page = 1, pageSize = 10, searchTerm = "") {
+    const offset = (page - 1) * pageSize;
 
     const posts = await prisma.post.findMany({
       skip: offset,
       take: pageSize,
       where: {
         title: {
-          contains: searchTerm // Filter by title containing the searchTerm
-        }
+          contains: searchTerm, // Filter by title containing the searchTerm
+        },
       },
       include: {
         mitra: {
           select: {
             user: {
               select: {
-                name: true
-              }
-            }
-          }
+                name: true,
+              },
+            },
+          },
         },
-        images: { select: { url: true } }
-      }
-    })
+        images: { select: { url: true } },
+      },
+    });
 
-    return posts
+    return posts;
   }
 
   static async getPostById(id: string) {
     const getPostById = await prisma.post.findUnique({
       where: {
-        id: id
+        id: id,
       },
-      include: { images: true, mitra: true }
-    })
-    return getPostById
+      include: { images: true, mitra: true },
+    });
+    return getPostById;
   }
 
   static async getPostByAuthor(mitraId: string) {
     const getPostByAuthor = await prisma.post.findMany({
       where: {
-        mitraId
+        mitraId,
       },
       include: {
         mitra: {
           select: {
             user: {
               select: {
-                name: true
-              }
+                name: true,
+              },
             },
-          }
+          },
         },
-        images: { select: { url: true } }
-      }
-    })
+        images: { select: { url: true } },
+      },
+    });
     if (!getPostByAuthor) {
-      throw Error('Post not found!')
+      throw Error("Post not found!");
     }
-    return getPostByAuthor
+    return getPostByAuthor;
   }
 
   static async createPost(postData: PostModel, images: any, mitra: string) {
@@ -76,46 +76,46 @@ class PostService {
       phoneIntContact,
       category,
       merchant_name,
-      experience
-    } = postData
-    const image = images.map((file: any) => file.filename)
-    const mitraId = mitra
+      experience,
+    } = postData;
+    const image = images.map((file: any) => file.filename);
+    const mitraId = mitra;
     if (
       !title ||
       !description ||
-      !priceMin ||
-      !priceMax ||
+      // !priceMin ||
+      // !priceMax ||
       !location ||
       !phoneIntWhatsapp ||
       !phoneIntContact ||
       !experience
     ) {
-      throw Error('Fill all the require data')
+      throw Error("Fill all the require data");
     }
 
     const existingCategory = await prisma.category.findUnique({
-      where: { categoryName: category }
-    })
+      where: { categoryName: category },
+    });
 
     if (!existingCategory) {
-      throw Error('Category not exists')
+      throw Error("Category not exists");
     }
 
     const existingMitra = await prisma.mitra.findUnique({
       where: { id: mitraId },
     });
-    
+
     if (!existingMitra) {
-      throw new Error('Invalid mitraId');
+      throw new Error("Invalid mitraId");
     }
 
-    console.log('tes');
+    console.log("tes");
 
     const clean = sanitizeHtml(description, {
-      allowedTags: ['p', 'a', 'br', 'ul', 'li', 'strong'],
+      allowedTags: ["p", "a", "br", "ul", "li", "strong"],
       allowedAttributes: {
-        'a': ['href', 'class']
-      }
+        a: ["href", "class"],
+      },
     });
 
     console.log(clean);
@@ -136,10 +136,10 @@ class PostService {
         images: {
           createMany: {
             data: image.map((imageUrl: string) => ({
-              url: imageUrl
-            }))
-          }
-        }
+              url: imageUrl,
+            })),
+          },
+        },
       },
       include: {
         mitra: {
@@ -149,26 +149,26 @@ class PostService {
               select: {
                 name: true,
                 email: true,
-              }
-            }
-          }
+              },
+            },
+          },
         },
         images: {
           select: {
-            url: true
-          }
-        }
-      }
-    })
+            url: true,
+          },
+        },
+      },
+    });
 
-    return createdPost
+    return createdPost;
   }
 
   static async updatePost(
     postId: string,
     postData: PostModel,
     images: any,
-    mitraId: string
+    mitraId: string,
   ) {
     try {
       const maxImageCount = 5;
@@ -184,7 +184,7 @@ class PostService {
       });
 
       if (!post) {
-        return ({ error: 'Post not found' });
+        return { error: "Post not found" };
       }
 
       const postDataInput = {
@@ -199,22 +199,22 @@ class PostService {
         mitraId: post.mitraId,
         isLiked: postData.isLiked || false,
         merchant_name: postData.merchant_name,
-        experience: postData.experience
-      }
+        experience: postData.experience,
+      };
 
       const user = await prisma.user.findUnique({
         where: {
-          id: mitraId
-        }
-      })
-      
+          id: mitraId,
+        },
+      });
+
       if (!user) {
-        throw new Error('Cannot find user')
+        throw new Error("Cannot find user");
       }
 
-      if ( user.id !== post.mitraId) {
-        if (!user.isAdmin){
-          throw new Error('You are not the owner of post');
+      if (user.id !== post.mitraId) {
+        if (!user.isAdmin) {
+          throw new Error("You are not the owner of post");
         }
       }
 
@@ -225,10 +225,13 @@ class PostService {
 
       // Cek ID gambar yang akan diupdate
       const existingImageIds = existingImages.map((image: any) => image.id);
-      const invalidImageIds = existingImageIds.filter((imageId: any) => !post.images.some((dbImage) => dbImage.id === imageId));
+      const invalidImageIds = existingImageIds.filter(
+        (imageId: any) =>
+          !post.images.some((dbImage) => dbImage.id === imageId),
+      );
 
       if (invalidImageIds.length > 0) {
-        return ({ error: 'Invalid image IDs for the post' });
+        return { error: "Invalid image IDs for the post" };
       }
 
       // Cek jumlah slot gambar
@@ -237,10 +240,15 @@ class PostService {
       // Jika ada slot yang tersedia, cek gambar baru (ID null)
       if (availableSlots > 0 && newImages.length > 0) {
         if (newImages.length > availableSlots) {
-          return ({ error: 'Image slots are full. You can only add up to ' + availableSlots + ' new images.' });
+          return {
+            error:
+              "Image slots are full. You can only add up to " +
+              availableSlots +
+              " new images.",
+          };
         }
       } else if (newImages.length > 0) {
-        return ({ error: 'Image slots are full. You cannot add new images.' });
+        return { error: "Image slots are full. You cannot add new images." };
       }
 
       // Update data post (misalnya title, description, dll.) jika ada dalam postData
@@ -253,7 +261,7 @@ class PostService {
 
       // Update gambar yang memiliki ID dan menghapus gambar jika URL-nya null atau kosong
       for (const image of existingImages) {
-        if (!image.url || image.url.trim() === '') {
+        if (!image.url || image.url.trim() === "") {
           await prisma.image.delete({
             where: { id: image.id },
           });
@@ -275,37 +283,37 @@ class PostService {
         });
       }
 
-      return ({ message: 'Post updated successfully' });
+      return { message: "Post updated successfully" };
     } catch (error) {
       console.error(error);
-      return ({ error: 'Internal server error' });
+      return { error: "Internal server error" };
     }
   }
 
   static async deletePost(id: string, mitra: string) {
     const post = await prisma.post.findUnique({
       where: {
-        id: id
-      }
-    })
+        id: id,
+      },
+    });
     if (!post) {
-      throw new Error('Cannot find post')
+      throw new Error("Cannot find post");
     }
     const user = await prisma.user.findUnique({
       where: {
-        id: mitra
-      }
-    })
+        id: mitra,
+      },
+    });
     if (!user) {
-      throw new Error('Cannot find user')
+      throw new Error("Cannot find user");
     }
 
-    if ( user.id !== post.mitraId) {
-      if (!user.isAdmin){
-        throw new Error('You are not the owner of post');
+    if (user.id !== post.mitraId) {
+      if (!user.isAdmin) {
+        throw new Error("You are not the owner of post");
       }
     }
-    
+
     const deletedPost = await prisma.post.delete({
       where: {
         id: id,
@@ -326,64 +334,63 @@ class PostService {
     orderBy: string,
     categoryName: string,
   ) {
-    const category_Name = categoryName || ''
-    const search = searchText || ''
-    const location = lokasi || ''
-    const strMinPrice = minPrice !== undefined ? String(minPrice) : undefined
-    const strMaxPrice = maxPrice !== undefined ? String(maxPrice) : undefined
-    const skipPage = skip || 0
-    const takePage = take || 10
-    const merchant_name = merchant_nama || ''
+    const category_Name = categoryName || "";
+    const search = searchText || "";
+    const location = lokasi || "";
+    const strMinPrice = minPrice !== undefined ? String(minPrice) : undefined;
+    const strMaxPrice = maxPrice !== undefined ? String(maxPrice) : undefined;
+    const skipPage = skip || 0;
+    const takePage = take || 10;
+    const merchant_name = merchant_nama || "";
 
-
-    let whereClause: any = {}
+    let whereClause: any = {};
     let orderByOption: any = {};
 
-    if (orderBy === 'asc' || orderBy === 'desc') {
+    if (orderBy === "asc" || orderBy === "desc") {
       // Apply orderBy filter if valid option is provided
       orderByOption.createdAt = orderBy;
     }
 
-    if (search !== '') {
+    if (search !== "") {
       // Apply search filter if searchText is not empty
       whereClause.title = {
-        contains: search
-      }
-    }
-
-    if (merchant_name !== '') {
-      // Apply location filter if lokasi is not empty
-      whereClause.merchant_name = {
-        contains: merchant_name
-      }
-    }
-
-    if (category_Name !== '') {
-      // Apply category filter if categoryName is not empty
-      whereClause.category = {
-        contains: category_Name
+        contains: search,
       };
     }
 
-    if (location !== '') {
+    if (merchant_name !== "") {
+      // Apply location filter if lokasi is not empty
+      whereClause.merchant_name = {
+        contains: merchant_name,
+      };
+    }
+
+    if (category_Name !== "") {
+      // Apply category filter if categoryName is not empty
+      whereClause.category = {
+        contains: category_Name,
+      };
+    }
+
+    if (location !== "") {
       // Apply location filter if lokasi is not empty
       whereClause.location = {
-        contains: location
-      }
+        contains: location,
+      };
     }
 
     if (strMinPrice !== undefined) {
       // Apply minPrice filter if minPrice is not undefined
       whereClause.priceMin = {
-        gte: strMinPrice
-      }
+        gte: strMinPrice,
+      };
     }
 
     if (strMaxPrice !== undefined) {
       // Apply maxPrice filter if maxPrice is not undefined
       whereClause.priceMax = {
-        lte: strMaxPrice
-      }
+        lte: strMaxPrice,
+      };
     }
 
     console.log(whereClause);
@@ -396,21 +403,20 @@ class PostService {
             experience: true,
             user: {
               select: {
-                name: true
-              }
-            }
-          }
+                name: true,
+              },
+            },
+          },
         },
-        images: { select: { url: true } }
+        images: { select: { url: true } },
       },
       orderBy: orderByOption,
       skip: skipPage,
-      take: takePage
-    })
+      take: takePage,
+    });
 
-    return results
-
+    return results;
   }
 }
 
-export default PostService
+export default PostService;

@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: mitraindb_dev
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - "1002:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+networks:
+  default:
+    external: true
+    name: proxy
+
+volumes:
+  mysql-data:

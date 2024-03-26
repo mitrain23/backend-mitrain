@@ -1,13 +1,13 @@
-import express from 'express';
-import cors from 'cors';
-import router from './routes/userRoute';
-import allRoutes from './routes';
-import path from 'path';
-import * as socketIo from 'socket.io';
-import connectDB from './utils/db';
-import { User } from '@prisma/client';
-require('dotenv').config();
-connectDB();
+import express from "express";
+import cors from "cors";
+import router from "./routes/userRoute";
+import allRoutes from "./routes";
+import path from "path";
+import * as socketIo from "socket.io";
+import connectDB from "./utils/db";
+import { User } from "@prisma/client";
+require("dotenv").config();
+connectDB().then((res) => console.log("Berhasil"));
 
 /**
  * -------------- GENERAL SETUP ----------------
@@ -19,16 +19,16 @@ const PORT = process.env.PORT;
  * CORS configuration for allowing cross-origin requests
  */
 
-const allowedMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD'];
+const allowedMethods = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"];
 
 const allowedHeaders = [
-  'Content-Type',
-  'Authorization',
-  'Access-Control-Allow-Origin',
+  "Content-Type",
+  "Authorization",
+  "Access-Control-Allow-Origin",
 ];
 
 const options: cors.CorsOptions = {
-  origin: '*',
+  origin: "*",
   methods: allowedMethods,
   credentials: true,
   allowedHeaders: allowedHeaders,
@@ -36,24 +36,22 @@ const options: cors.CorsOptions = {
 
 app.use(cors(options));
 
-
 /**
  * -------------- STATIC FILES ----------------
  */
 // Static Files
-app.use(express.static('public'));
-app.use(express.json({ limit: '10mb' }));
-
+app.use(express.static("public"));
+app.use(express.json({ limit: "10mb" }));
 
 /**
  * -------------- ROUTES ----------------
  */
 
 // Api routes
-app.use(allRoutes)
+app.use(allRoutes);
 
 // root route
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   const nodeEnv = process.env.NODE_ENV;
   res.send(`API ready in ${nodeEnv} environment`);
 });
@@ -62,29 +60,29 @@ app.get('/', (req, res) => {
  * -------------- SERVER ----------------
  */
 
-const server = app.listen(PORT, () => {
+const server = app
+  .listen(PORT, () => {
     console.log(`⚡️[server]: Server running on port ${PORT}`);
   })
-  .on('error', (err: Error) => {
+  .on("error", (err: Error) => {
     console.log(err);
   });
 
 /**
-* -------------- SOCKET IO ----------------
-*/
+ * -------------- SOCKET IO ----------------
+ */
 
 interface ServerToClientEvents {
   setup: (userData: User) => void;
-  connected: () => void; 
+  connected: () => void;
   joinChat: (room: string, name: string) => void;
-  messageReceived: (newMessageRecieved: { chat: any, sender: any }) => void;
+  messageReceived: (newMessageRecieved: { chat: any; sender: any }) => void;
 }
-
 
 interface ClientToServerEvents {
   setup: (userData: User) => void;
   joinChat: (room: string, name: string) => void;
-  newMessage: (newMessageRecieved: { chat: any, sender: any }) => void;
+  newMessage: (newMessageRecieved: { chat: any; sender: any }) => void;
 }
 
 interface InterServerEvents {
@@ -96,21 +94,18 @@ interface SocketData {
   age: number;
 }
 
-
 const io = new socketIo.Server<
-ClientToServerEvents,
-ServerToClientEvents,
-InterServerEvents,
-SocketData
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
 >(server, {
   pingTimeout: 60000,
   cors: {
-    origin: '*',
+    origin: "*",
     // credentials: true,
   },
-} );
-
-
+});
 
 io.on("connection", (socket: any) => {
   console.log("Connected to socket.io");
@@ -134,7 +129,7 @@ io.on("connection", (socket: any) => {
     }
   });
 
-  socket.on("newMessage", (newMessageRecieved: { chat: any, sender: any }) => {
+  socket.on("newMessage", (newMessageRecieved: { chat: any; sender: any }) => {
     try {
       var chat = newMessageRecieved.chat;
 
@@ -143,14 +138,16 @@ io.on("connection", (socket: any) => {
         return;
       }
 
-      chat.users.forEach((user : User) => {
+      chat.users.forEach((user: User) => {
         if (user.id == newMessageRecieved.sender.id) return;
 
         socket.in(user.id).emit("messageReceived", newMessageRecieved);
       });
-    } catch (error:any) {
+    } catch (error: any) {
       console.error("Error in handling 'newMessage' event:", error.message);
-      socket.emit("newMessageError", { message: "Failed to handle 'newMessage' event" });
+      socket.emit("newMessageError", {
+        message: "Failed to handle 'newMessage' event",
+      });
     }
   });
 

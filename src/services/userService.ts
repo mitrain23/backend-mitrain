@@ -1,10 +1,10 @@
-import prisma from '../utils/prisma'
-import { validationResult } from 'express-validator'
-import { UserModel } from '../models/userModel'
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
-import { MitraModel } from '../models/mitraModel'
-require('dotenv').config()
+import prisma from "../utils/prisma";
+import { validationResult } from "express-validator";
+import { UserModel } from "../models/userModel";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { MitraModel } from "../models/mitraModel";
+require("dotenv").config();
 
 class UserService {
   static async registerAdmin(userData: any) {
@@ -16,7 +16,7 @@ class UserService {
       phoneIntWhatsapp,
       phoneIntContact,
       categoryName,
-    } = userData
+    } = userData;
 
     if (
       !email ||
@@ -26,26 +26,26 @@ class UserService {
       !phoneIntWhatsapp ||
       !phoneIntContact
     ) {
-      throw Error('Fill all the require data')
+      throw Error("Fill all the require data");
     }
 
     const existingUser = await prisma.user.findUnique({
-      where: { email: email, isAdmin: true }
-    })
+      where: { email: email, isAdmin: true },
+    });
 
     if (existingUser) {
-      throw Error('Admin already exists')
+      throw Error("Admin already exists");
     }
 
     const existingCategory = await prisma.category.findUnique({
-      where: { categoryName: categoryName }
-    })
+      where: { categoryName: categoryName },
+    });
 
     if (!existingCategory) {
-      throw Error('Category not exists')
+      throw Error("Category not exists");
     }
 
-    const hashPassword = await bcrypt.hash(password, 10)
+    const hashPassword = await bcrypt.hash(password, 10);
 
     const newAdmin = await prisma.user.create({
       data: {
@@ -57,8 +57,8 @@ class UserService {
         phoneIntWhatsapp,
         Mitra: {
           create: {
-            description : '',
-            experience: '',
+            description: "",
+            experience: "",
             categoryName: existingCategory.categoryName,
           },
         },
@@ -68,15 +68,14 @@ class UserService {
         images: {
           createMany: {
             data: {
-              url: ''
-            }
-          }
-        }
+              url: "",
+            },
+          },
+        },
       },
     });
 
-
-    return newAdmin
+    return newAdmin;
   }
 
   static async registerUser(userData: UserModel, images: any) {
@@ -86,9 +85,9 @@ class UserService {
       name,
       address,
       phoneIntWhatsapp,
-      phoneIntContact
-    } = userData
-    const imagePath = images ? images.filename : null
+      phoneIntContact,
+    } = userData;
+    const imagePath = images ? images.filename : null;
     if (
       !email ||
       !password ||
@@ -97,18 +96,18 @@ class UserService {
       !phoneIntWhatsapp ||
       !phoneIntContact
     ) {
-      throw Error('Fill all the require data')
+      throw Error("Fill all the require data");
     }
 
     const existingUser = await prisma.user.findUnique({
-      where: { email: email }
-    })
+      where: { email: email },
+    });
 
     if (existingUser) {
-      throw Error('User already exists')
+      throw Error("User already exists");
     }
 
-    const hashPassword = await bcrypt.hash(password, 10)
+    const hashPassword = await bcrypt.hash(password, 10);
 
     const newUser = await prisma.user.create({
       data: {
@@ -122,53 +121,53 @@ class UserService {
         isMitra: false,
         images: {
           create: {
-            url: imagePath
-          }
-        }
+            url: imagePath,
+          },
+        },
       },
       include: {
         images: {
           select: {
-            url: true
-          }
-        }
-      }
-    })
+            url: true,
+          },
+        },
+      },
+    });
 
-    return newUser
+    return newUser;
   }
 
   static async loginUser(email: string, password: string) {
     try {
       // Check if user exists
       const user = await prisma.user.findUnique({
-        where: { email }
-      })
+        where: { email },
+      });
 
       if (!user) {
-        throw new Error('User not found')
+        throw new Error("User not found");
       }
 
       // Compare passwords
-      const passwordsMatch = await bcrypt.compare(password, user.password)
+      const passwordsMatch = await bcrypt.compare(password, user.password);
 
       if (!passwordsMatch) {
-        throw new Error('Incorrect password')
+        throw new Error("Incorrect password");
       }
 
       // If everything is fine, return the user
-      return user
+      return user;
     } catch (error: any) {
-      console.error('Error during login:', error.message)
-      throw new Error('Login failed. Please check your credentials.')
+      console.error("Error during login:", error.message);
+      throw new Error("Login failed. Please check your credentials.");
     }
   }
 
   static async generateToken(userId: string | undefined | number) {
-    const token = jwt.sign({ userId }, process.env.JWT_SECRET || '', {
-      expiresIn: '4h'
-    })
-    return token
+    const token = jwt.sign({ userId }, process.env.JWT_SECRET || "", {
+      expiresIn: "4h",
+    });
+    return token;
   }
 
   static async getAllUser() {
@@ -184,14 +183,14 @@ class UserService {
         isMitra: true,
         images: {
           select: {
-            url: true
-          }
-        }
-      }
+            url: true,
+          },
+        },
+      },
     });
 
-    return users
+    return users;
   }
 }
 
-export default UserService
+export default UserService;

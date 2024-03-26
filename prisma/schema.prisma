@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.1.x"]
 }
 
 datasource db {
@@ -49,8 +50,8 @@ model Post {
   category         String
   description      String   @db.Text
   experience       String
-  priceMin         String
-  priceMax         String
+  priceMin         String?
+  priceMax         String?
   location         String
   isLiked          Boolean?
   phoneIntWhatsapp String    @db.VarChar(15)
